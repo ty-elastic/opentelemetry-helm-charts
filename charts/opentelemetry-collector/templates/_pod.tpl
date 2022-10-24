@@ -37,6 +37,15 @@ containers:
           fieldRef:
             apiVersion: v1
             fieldPath: status.podIP
+      - name: OTEL_K8S_NODE_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+      - name: OTEL_K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
       {{- if .Values.presets.hostMetrics.enabled }}
       - name: HOST_PROC
         value: /hostfs/proc
