@@ -46,6 +46,29 @@ entries:
   opentelemetry-demo:
   - apiVersion: v2
     appVersion: 0.6.1-beta
+    created: "2022-10-24T21:15:31.13007109Z"
+    dependencies:
+    - condition: observability.otelcol.enabled
+      name: opentelemetry-collector
+      repository: https://ty-elastic.github.io/opentelemetry-helm-charts
+      version: 0.37.1
+    description: opentelemetry demo helm chart
+    digest: 85be04762c9db05fbad2b0db3dc9f1aaae04cf780e62812fc3f5523801c921c1
+    home: https://opentelemetry.io/
+    icon: https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png
+    maintainers:
+    - name: dmitryax
+    - name: tylerhelmuth
+    - name: wph95
+    name: opentelemetry-demo
+    sources:
+    - https://github.com/ty-elastic/opentelemetry-helm-charts
+    type: application
+    urls:
+    - https://github.com/ty-elastic/opentelemetry-helm-charts/releases/download/opentelemetry-demo-0.9.13/opentelemetry-demo-0.9.13.tgz
+    version: 0.9.13
+  - apiVersion: v2
+    appVersion: 0.6.1-beta
     created: "2022-10-24T21:06:00.903251286Z"
     dependencies:
     - condition: observability.otelcol.enabled
@@ -90,4 +113,4 @@ entries:
     urls:
     - https://github.com/ty-elastic/opentelemetry-helm-charts/releases/download/opentelemetry-demo-0.9.11/opentelemetry-demo-0.9.11.tgz
     version: 0.9.11
-generated: "2022-10-24T21:06:00.903268586Z"
+generated: "2022-10-24T21:15:31.13008709Z"
