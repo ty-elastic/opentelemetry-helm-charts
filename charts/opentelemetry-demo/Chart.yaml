@@ -15,5 +15,5 @@ appVersion: "0.6.1-beta"
 dependencies:
   - name: opentelemetry-collector
     version: 0.35.0
-    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    repository: https://ty-elastic.github.io/opentelemetry-helm-charts
     condition: observability.otelcol.enabled

@@ -373,15 +373,34 @@ spec:
         app.kubernetes.io/component: adservice
     spec:
       containers:
-        - name: adservice
-          image: 'otel/demo:v0.6.1-beta-adservice'
-          imagePullPolicy: IfNotPresent
+        - name: ad-service
+          image: 'ghcr.io/ty-elastic/demo:v0.3.4-alpha-adservice'
+          imagePullPolicy: Always
           ports:
           
           - containerPort: 8080
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -403,9 +422,9 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: AD_SERVICE_PORT
             value: "8080"
           resources:
@@ -447,6 +466,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -468,13 +506,13 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: ASPNETCORE_URLS
             value: http://*:8080
           - name: REDIS_ADDR
             value: 'example-redis:6379'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: CART_SERVICE_PORT
             value: "8080"
           resources:
@@ -516,6 +554,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -537,7 +594,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: CART_SERVICE_ADDR
             value: 'example-cartservice:8080'
           - name: CURRENCY_SERVICE_ADDR
@@ -551,7 +608,7 @@ spec:
           - name: EMAIL_SERVICE_ADDR
             value: http://example-emailservice:8080
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: CHECKOUT_SERVICE_PORT
             value: "8080"
           resources:
@@ -593,6 +650,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -614,11 +690,11 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: PORT
             value: "8080"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: CURRENCY_SERVICE_PORT
             value: "8080"
           resources:
@@ -660,6 +736,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -681,15 +776,15 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: APP_ENV
             value: production
           - name: PORT
             value: "8080"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://example-otelcol:4318/v1/traces
+            value: http://${OTEL_K8S_NODE_IP}:4318/v1/traces
           - name: EMAIL_SERVICE_PORT
             value: "8080"
           resources:
@@ -733,6 +828,25 @@ spec:
             name: http
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -754,7 +868,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: FEATURE_FLAG_GRPC_SERVICE_PORT
             value: "50053"
           - name: FEATURE_FLAG_SERVICE_PORT
@@ -764,7 +878,7 @@ spec:
           - name: DATABASE_URL
             value: ecto://ffs:ffs@example-ffspostgres:5432/ffs
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           resources:
             limits:
               memory: 160Mi
@@ -804,6 +918,25 @@ spec:
             name: postgres
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -825,7 +958,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: POSTGRES_DB
             value: ffs
           - name: POSTGRES_PASSWORD
@@ -833,7 +966,7 @@ spec:
           - name: POSTGRES_USER
             value: ffs
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           resources:
             limits:
               memory: 120Mi
@@ -873,6 +1006,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -894,7 +1046,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: FRONTEND_ADDR
             value: :8080
           - name: AD_SERVICE_ADDR
@@ -912,7 +1064,7 @@ spec:
           - name: SHIPPING_SERVICE_ADDR
             value: 'example-shippingservice:8080'
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: FRONTEND_PORT
             value: "8080"
           resources:
@@ -954,6 +1106,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -975,7 +1146,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: FRONTEND_ADDR
             value: 'example-frontend:8080'
           - name: LOCUST_WEB_PORT
@@ -991,7 +1162,7 @@ spec:
           - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
             value: python
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: LOADGENERATOR_PORT
             value: "8089"
           resources:
@@ -1033,6 +1204,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1054,9 +1244,9 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: PAYMENT_SERVICE_PORT
             value: "8080"
           resources:
@@ -1098,6 +1288,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1119,9 +1328,9 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: PRODUCT_CATALOG_SERVICE_PORT
             value: "8080"
           - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
@@ -1165,6 +1374,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1186,7 +1414,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: OTEL_TRACES_SAMPLER
             value: parentbased_always_on
           - name: OTEL_TRACES_EXPORTER
@@ -1196,7 +1424,7 @@ spec:
           - name: OTEL_PHP_TRACES_PROCESSOR
             value: simple
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: 'example-otelcol:4317'
+            value: ${OTEL_K8S_NODE_IP}:4317
           - name: QUOTE_SERVICE_PORT
             value: "8080"
           resources:
@@ -1238,6 +1466,25 @@ spec:
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1259,13 +1506,13 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: OTEL_PYTHON_LOG_CORRELATION
             value: "true"
           - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
             value: python
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
             value: 'example-featureflagservice:50053'
           - name: RECOMMENDATION_SERVICE_PORT
@@ -1311,6 +1558,25 @@ spec:
             name: redis
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1332,7 +1598,7 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           resources:
             limits:
               memory: 20Mi
@@ -1363,15 +1629,34 @@ spec:
         app.kubernetes.io/component: shippingservice
     spec:
       containers:
-        - name: shippingservice
-          image: 'otel/demo:v0.6.1-beta-shippingservice'
-          imagePullPolicy: IfNotPresent
+        - name: shipping-service
+          image: 'ghcr.io/ty-elastic/demo:v0.3.4-alpha-shippingservice'
+          imagePullPolicy: Always
           ports:
           
           - containerPort: 8080
             name: service
           env:
           
+          - name: OTEL_K8S_CONTAINER_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_K8S_NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: OTEL_K8S_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: OTEL_K8S_POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
           - name: OTEL_SERVICE_NAME
             valueFrom:
               fieldRef:
@@ -1393,13 +1678,13 @@ spec:
                 apiVersion: v1
                 fieldPath: metadata.name
           - name: OTEL_RESOURCE_ATTRIBUTES
-            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+            value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
           - name: PORT
             value: "8080"
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-            value: http://example-otelcol:4317
+            value: http://$(OTEL_K8S_NODE_IP):4317
           - name: SHIPPING_SERVICE_PORT
             value: "8080"
           - name: QUOTE_SERVICE_ADDR
