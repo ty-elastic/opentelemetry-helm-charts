@@ -1,4 +1,4 @@
-name: Release Charts
+name: Release Demo Charts
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - ty-elastic/elastic
 
 jobs:
-  release:
+  demo-release:
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -29,6 +29,16 @@ jobs:
       - name: Add dependent repositories
         run: |
           helm repo add open-telemetry https://ty-elastic.github.io/opentelemetry-helm-charts
+
+      - name: Remove File
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: charts/opentelemetry-collector
+
+      - name: Remove File
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: charts/opentelemetry-operator
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.1
