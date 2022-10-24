@@ -1,9 +1,9 @@
 observability:
   # collector settings are configured in the opentelemetry-collector section.
   otelcol:
-    enabled: true
+    enabled: false
   jaeger:
-    enabled: true
+    enabled: false
     image:
       repository: jaegertracing/all-in-one
       # Overrides the image tag whose default is the chart appVersion.
@@ -18,6 +18,25 @@ observability:
 
 default:
   env:
+    - name: OTEL_K8S_CONTAINER_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: "metadata.labels['app.kubernetes.io/component']"
+    - name: OTEL_K8S_NODE_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: OTEL_K8S_POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    - name: OTEL_K8S_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
     - name: OTEL_SERVICE_NAME
       valueFrom:
         fieldRef:
@@ -39,7 +58,7 @@ default:
           apiVersion: v1
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
   image:
     repository: otel/demo
     # Overrides the image tag whose default is the chart appVersion.
@@ -80,7 +99,10 @@ components:
     useDefault:
       env: true
 
-    imageOverride: {}
+    imageOverride:
+      repository: ghcr.io/ty-elastic/demo
+      tag: "v0.3.4-alpha-adservice"
+      pullPolicy: Always
     serviceType: ClusterIP
     schedulingRules:
       nodeSelector: {}
@@ -89,7 +111,7 @@ components:
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: AD_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -115,7 +137,7 @@ components:
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: CART_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -149,7 +171,7 @@ components:
       - name: EMAIL_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -173,7 +195,7 @@ components:
       - name: PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: CURRENCY_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -200,9 +222,9 @@ components:
       - name: PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
+        value: 'http://${OTEL_K8S_NODE_IP}:4318/v1/traces'
       - name: EMAIL_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -230,7 +252,7 @@ components:
       - name: DATABASE_URL
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
     serviceType: ClusterIP
     ports:
       - name: grpc
@@ -263,7 +285,7 @@ components:
       - name: POSTGRES_USER
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
     serviceType: ClusterIP
     ports:
       - name: postgres
@@ -304,7 +326,7 @@ components:
       - name: SHIPPING_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: FRONTEND_PORT
         value: "8080"
     podAnnotations: {}
@@ -340,7 +362,7 @@ components:
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: LOADGENERATOR_PORT
         value: "8089"
     podAnnotations: {}
@@ -362,7 +384,7 @@ components:
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -384,7 +406,7 @@ components:
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: PRODUCT_CATALOG_SERVICE_PORT
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
@@ -412,7 +434,7 @@ components:
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: RECOMMENDATION_SERVICE_PORT
@@ -429,7 +451,10 @@ components:
     useDefault:
       env: true
 
-    imageOverride: {}
+    imageOverride:
+      repository: ghcr.io/ty-elastic/demo
+      tag: "v0.3.4-alpha-shippingservice"
+      pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -440,9 +465,9 @@ components:
       - name: PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: SHIPPING_SERVICE_PORT
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
@@ -474,7 +499,7 @@ components:
       - name: OTEL_PHP_TRACES_PROCESSOR
         value: "simple"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: '${OTEL_K8S_NODE_IP}:4317'
       - name: QUOTE_SERVICE_PORT
         value: "8080"
     podAnnotations: {}
@@ -484,12 +509,14 @@ components:
 
 opentelemetry-collector:
   nameOverride: otelcol
-  mode: deployment
-  resources:
-    limits:
-      memory: 100Mi
-  service:
-    type: ClusterIP
+  mode: daemonset
+  presets:
+    logsCollection:
+      enabled: false
+    hostMetrics:
+      enabled: false
+    kubernetesAttributes:
+      enabled: true
   config:
     receivers:
       otlp:
@@ -501,8 +528,8 @@ opentelemetry-collector:
                 - "http://*"
                 - "https://*"
     exporters:
-      otlp:
-        endpoint: '{{ .Release.Name }}-jaeger:4317'
+      otlp/elastic:
+        endpoint: 127.0.0.1:8200
         tls:
           insecure: true
     service:
@@ -510,4 +537,11 @@ opentelemetry-collector:
         traces:
           exporters:
             - logging
-            - otlp
+            - otlp/elastic
+        metrics:
+          exporters:
+            - logging
+            - otlp/elastic
+        logs:
+          exporters:
+            - logging    
