@@ -242,6 +242,8 @@ receivers:
 processors:
   k8sattributes:
     passthrough: false
+    filter:
+      node_from_env_var: OTEL_K8S_NODE_NAME   
     pod_association:
     - sources:
       - from: resource_attribute
@@ -259,6 +261,7 @@ processors:
         - "k8s.daemonset.name"
         - "k8s.cronjob.name"
         - "k8s.job.name"
+        - "container.id"
 {{- end }}
 
 {{/* Build the list of port for deployment service */}}

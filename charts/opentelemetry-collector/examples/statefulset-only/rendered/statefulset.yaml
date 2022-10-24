@@ -5,11 +5,7 @@ kind: StatefulSet
 metadata:
   name: example-opentelemetry-collector
   labels:
-<<<<<<< HEAD
-    helm.sh/chart: opentelemetry-collector-0.37.0
-=======
-    helm.sh/chart: opentelemetry-collector-0.35.1
->>>>>>> 2e7d946 ([opentelemetry-collector] add kubernetes attributes processor)
+    helm.sh/chart: opentelemetry-collector-0.37.1
     app.kubernetes.io/name: opentelemetry-collector
     app.kubernetes.io/instance: example
     app.kubernetes.io/version: "0.62.1"
@@ -74,6 +70,15 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
+            - name: OTEL_K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: OTEL_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
           livenessProbe:
             httpGet:
               path: /
