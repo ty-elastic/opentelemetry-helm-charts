@@ -6,7 +6,7 @@ on:
       - ty-elastic/elastic
 
 jobs:
-  release:
+  collector-release:
     permissions:
       contents: write
     runs-on: ubuntu-latest
