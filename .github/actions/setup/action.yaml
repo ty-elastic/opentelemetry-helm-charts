@@ -26,4 +26,4 @@ runs:
 
     - name: Add Dependencies
       shell: bash
-      run: helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+      run: helm repo add open-telemetry https://ty-elastic.github.io/opentelemetry-helm-charts
