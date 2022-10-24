@@ -3,7 +3,7 @@ observability:
   otelcol:
     enabled: true
   jaeger:
-    enabled: true
+    enabled: false
     image:
       repository: jaegertracing/all-in-one
       # Overrides the image tag whose default is the chart appVersion.
@@ -23,6 +23,25 @@ observability:
 default:
   # list of environment variables applied to all components
   env:
+    - name: OTEL_K8S_CONTAINER_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: "metadata.labels['app.kubernetes.io/component']"
+    - name: OTEL_K8S_NODE_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: OTEL_K8S_POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    - name: OTEL_K8S_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
     - name: OTEL_SERVICE_NAME
       valueFrom:
         fieldRef:
@@ -44,7 +63,7 @@ default:
           apiVersion: v1
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME)
+      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME),k8s.container.restart_count=0
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -98,7 +117,7 @@ components:
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: AD_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -125,7 +144,7 @@ components:
       - name: REDIS_ADDR
         value: '{{ include "otel-demo.name" . }}-redis:6379'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: CART_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -160,7 +179,7 @@ components:
       - name: EMAIL_SERVICE_ADDR
         value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: CHECKOUT_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -185,7 +204,7 @@ components:
       - name: PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: CURRENCY_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -213,9 +232,9 @@ components:
       - name: PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4318/v1/traces'
+        value: 'http://$(OTEL_K8S_NODE_IP):4318/v1/traces'
       - name: EMAIL_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -229,7 +248,10 @@ components:
     useDefault:
       env: true
 
-    imageOverride: {}
+    imageOverride:
+      repository: ghcr.io/ty-elastic/demo
+      tag: "v0.3.4-alpha-featureflagservice"
+      pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -240,11 +262,15 @@ components:
       - name: FEATURE_FLAG_SERVICE_PORT
         value: "8081"
       - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: http_protobuf
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
         value: grpc
       - name: DATABASE_URL
         value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: 'http://$(OTEL_K8S_NODE_IP):4318/v1/traces'
     envOverrides: []
     serviceType: ClusterIP
     ports:
@@ -266,6 +292,7 @@ components:
     imageOverride:
       repository: "postgres"
       tag: "14"
+      pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -278,7 +305,7 @@ components:
       - name: POSTGRES_USER
         value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
     envOverrides: []
     serviceType: ClusterIP
     ports:
@@ -295,7 +322,10 @@ components:
     useDefault:
       env: true
 
-    imageOverride: {}
+    imageOverride:
+      repository: ghcr.io/ty-elastic/demo
+      tag: "v0.3.4-alpha-frontend"
+      pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -320,7 +350,7 @@ components:
       - name: SHIPPING_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: FRONTEND_PORT
         value: "8080"
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
@@ -402,7 +432,7 @@ components:
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: LOADGENERATOR_PORT
         value: "8089"
     envOverrides: []
@@ -425,7 +455,7 @@ components:
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: PAYMENT_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -448,7 +478,7 @@ components:
     servicePort: 8080
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: PRODUCT_CATALOG_SERVICE_PORT
         value: "8080"
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
@@ -477,7 +507,7 @@ components:
       - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
         value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: RECOMMENDATION_SERVICE_PORT
@@ -495,7 +525,10 @@ components:
     useDefault:
       env: true
 
-    imageOverride: {}
+    imageOverride:
+      repository: ghcr.io/ty-elastic/demo
+      tag: "v0.3.4-alpha-shippingservice"
+      pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
       affinity: {}
@@ -506,9 +539,9 @@ components:
       - name: PORT
         value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: 'http://{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: 'http://$(OTEL_K8S_NODE_IP):4317'
       - name: SHIPPING_SERVICE_PORT
         value: "8080"
       - name: QUOTE_SERVICE_ADDR
@@ -541,7 +574,7 @@ components:
       - name: OTEL_PHP_TRACES_PROCESSOR
         value: "simple"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include "otel-demo.name" . }}-otelcol:4317'
+        value: '${OTEL_K8S_NODE_IP}:4317'
       - name: QUOTE_SERVICE_PORT
         value: "8080"
     envOverrides: []
@@ -552,23 +585,18 @@ components:
 
 opentelemetry-collector:
   nameOverride: otelcol
-  mode: deployment
+  mode: daemonset
   resources:
     limits:
       memory: 100Mi
-  service:
-    type: ClusterIP
-  ports:
-    metrics:
+  presets:
+    logsCollection:
+      enabled: false
+    hostMetrics:
+      enabled: false
+    kubernetesAttributes:
       enabled: true
-    prometheus:
-      enabled: true
-      containerPort: 9464
-      servicePort: 9464
-      protocol: TCP
   podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9464"
     opentelemetry_community_demo: "true"
   config:
     receivers:
@@ -582,8 +610,9 @@ opentelemetry-collector:
                 - "https://*"
 
     exporters:
-      otlp:
-        endpoint: '{{ include "otel-demo.name" . }}-jaeger:4317'
+      logging: {}
+      otlp/elastic:
+        endpoint: ${OTEL_K8S_NODE_IP}:8200
         tls:
           insecure: true
       prometheus:
@@ -596,82 +625,8 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, spanmetrics, batch]
-          exporters: [otlp, logging]
+          processors: [memory_limiter, batch]
+          exporters: [otlp/elastic, logging]
         metrics:
-          exporters: [prometheus, logging]
+          exporters: [otlp/elastic, logging]
 
-prometheus:
-  alertmanager:
-    enabled: false
-  configmapReload:
-    prometheus:
-      enabled: false
-  kubeStateMetrics:
-    enabled: false
-  nodeExporter:
-    enabled: false
-  pushgateway:
-    enabled: false
-
-  server:
-    global:
-      scrape_interval: 5s
-      scrape_timeout: 3s
-      evaluation_interval: 30s
-    service:
-      servicePort: 9090
-
-  serverFiles:
-    prometheus.yml:
-      scrape_configs:
-        - job_name: 'opentelemetry-community-demo'
-          kubernetes_sd_configs:
-            - role: pod
-          relabel_configs:
-            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
-              action: keep
-              regex: true
-
-grafana:
-  grafana.ini:
-    auth:
-      disable_login_form: true
-    auth.anonymous:
-      enabled: true
-      org_name: Main Org.
-      org_role: Admin
-    server:
-      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
-      serve_from_sub_path: true
-  adminPassword: admin
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          uid: webstore-metrics
-          type: prometheus
-          url: 'http://{{ include "otel-demo.name" . }}-prometheus-server:9090'
-          editable: true
-          isDefault: true
-        - name: Jaeger
-          uid: webstore-traces
-          type: jaeger
-          url: 'http://{{ include "otel-demo.name" . }}-jaeger:16686'
-          editable: true
-          isDefault: false
-  dashboardProviders:
-    dashboardproviders.yaml:
-      apiVersion: 1
-      providers:
-        - name: 'default'
-          orgId: 1
-          folder: ''
-          type: file
-          disableDeletion: false
-          editable: true
-          options:
-            path: /var/lib/grafana/dashboards/default
-  dashboardsConfigMaps:
-    default: '{{ include "otel-demo.name" . }}-grafana-dashboards'

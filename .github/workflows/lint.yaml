@@ -3,7 +3,7 @@ name: Lint Charts
 on:
   pull_request:
     branches:
-      - main
+      - ty-elastic/elastic
 
 jobs:
   lint-test:
