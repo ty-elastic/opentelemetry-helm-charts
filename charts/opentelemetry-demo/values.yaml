@@ -67,7 +67,7 @@ default:
           apiVersion: v1
           fieldPath: metadata.name
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME),k8s.container.restart_count=0
+      value: service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID),k8s.pod.ip=$(OTEL_K8S_POD_IP),k8s.container.name=$(OTEL_K8S_CONTAINER_NAME)
   # Allows overriding and additions to .Values.default.env
   envOverrides: []
   #  - name: OTEL_K8S_NODE_NAME
@@ -254,7 +254,6 @@ components:
 
     imageOverride:
       repository: ghcr.io/ty-elastic/demo
-      tag: "v1.0.0-featureflagservice"
       pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
@@ -327,7 +326,6 @@ components:
 
     imageOverride:
       repository: ghcr.io/ty-elastic/demo
-      tag: "v1.0.0-frontend"
       pullPolicy: Always
     schedulingRules:
       nodeSelector: {}
@@ -530,7 +528,6 @@ components:
 
     imageOverride:
       repository: ghcr.io/ty-elastic/demo
-      tag: "v1.0.0-shippingservice"
       pullPolicy: Always
     schedulingRules:
       nodeSelector: {}

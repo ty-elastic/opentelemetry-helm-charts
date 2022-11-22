@@ -14,8 +14,9 @@ icon: https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png
 appVersion: "1.1.0"
 dependencies:
   - name: opentelemetry-collector
-    version: 0.39.1
+    version: 0.39.2
     repository: https://ty-elastic.github.io/opentelemetry-helm-charts
+    #repository: http://127.0.0.1:8080
     condition: observability.otelcol.enabled
   - name: prometheus
     version: 15.16.1

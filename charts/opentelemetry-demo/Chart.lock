@@ -1,12 +1,12 @@
 dependencies:
 - name: opentelemetry-collector
-  repository: https://ty-elastic.github.io/opentelemetry-helm-charts
-  version: 0.39.1
+  repository: http://127.0.0.1:8080
+  version: 0.39.2
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
   version: 15.16.1
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 6.42.2
-digest: sha256:1e865a4eeab047148522d810711c2869038a7eb2300193f50156c5e5aa63f68b
-generated: "2022-11-14T22:16:08.306967-07:00"
+digest: sha256:187fce3957460ecab1d35bd925b80d0e9e755b8420bb9886e9a77876135c98bf
+generated: "2022-11-21T16:32:51.923674-06:00"
